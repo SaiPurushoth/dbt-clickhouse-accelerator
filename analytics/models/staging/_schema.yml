@@ -1,35 +1,13 @@
 models:
-  - name: stg_events
+  - name: stg_truck
     columns:
-      - name: event_id
-        tests: [not_null, unique]
-      - name: event_type
-        tests:
-          - accepted_values:
-              values: ["page_view", "add_to_cart", "checkout", "purchase"]
-
-  - name: stg_orders
-    columns:
-      - name: order_id
-        tests: [not_null, unique]
-      - name: user_id
+      - name: truck_id
         tests: [not_null]
 
 sources:
-  - name: raw
+  - name: bronze
     database: default
 
     tables:
-      - name: customer_seeds # physical table name
-        description: Raw ingested customers
-        columns:
-          - name: customer_id
-          - name: last_name
-          - name: email
-          - name: phone
-          - name: signup_date
-          - name: country
-          - name: state
-          - name: city
-          - name: zip
-          - name: gender
+      - name: raw_truck
+        description: Raw ingested truck
