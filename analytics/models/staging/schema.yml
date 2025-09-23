@@ -7,7 +7,6 @@ models:
 sources:
   - name: bronze
     database: default
-
     tables:
       - name: raw_truck
         description: Raw ingested truck
