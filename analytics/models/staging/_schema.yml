@@ -1,0 +1,35 @@
+models:
+  - name: stg_events
+    columns:
+      - name: event_id
+        tests: [not_null, unique]
+      - name: event_type
+        tests:
+          - accepted_values:
+              values: ["page_view", "add_to_cart", "checkout", "purchase"]
+
+  - name: stg_orders
+    columns:
+      - name: order_id
+        tests: [not_null, unique]
+      - name: user_id
+        tests: [not_null]
+
+sources:
+  - name: raw
+    database: default
+
+    tables:
+      - name: customer_seeds # physical table name
+        description: Raw ingested customers
+        columns:
+          - name: customer_id
+          - name: last_name
+          - name: email
+          - name: phone
+          - name: signup_date
+          - name: country
+          - name: state
+          - name: city
+          - name: zip
+          - name: gender

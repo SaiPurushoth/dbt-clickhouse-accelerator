@@ -1,0 +1,12 @@
+analytics:
+  target: dev
+  outputs:
+    dev:
+      type: clickhouse
+      schema: default
+      host: host.docker.internal
+      port: 8123
+      user: dbt_user
+      password: dbt_password
+      secure: False
+      verify: False
