@@ -4,11 +4,11 @@ sys.path.insert(0, "/usr/local/airflow/")  # Import the modules from the path
 import clickhouse_connect
 
 CLICKHOUSE_CONFIG = {
-    "host": os.getenv("CLICKHOUSE_HOST", "host.docker.internal"),
-    "port": int(os.getenv("CLICKHOUSE_PORT", "8123")),
-    "username": os.getenv("CLICKHOUSE_USER", "dbt_user"),
-    "password": os.getenv("CLICKHOUSE_PASSWORD", "dbt_password"),
-    "database": os.getenv("CLICKHOUSE_DATABASE", "default"),
+    "host": os.getenv("CLICKHOUSE_HOST"),
+    "port": int(os.getenv("CLICKHOUSE_PORT")),
+    "username": os.getenv("CLICKHOUSE_USER"),
+    "password": os.getenv("CLICKHOUSE_PASSWORD"),
+    "database": os.getenv("CLICKHOUSE_DATABASE"),
     "secure": os.getenv("CLICKHOUSE_SECURE", "False").lower() == "true",
 }
 
