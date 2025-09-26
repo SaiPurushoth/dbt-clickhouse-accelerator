@@ -94,7 +94,7 @@ Edit `analytics/profiles.yml`:
 
 ---
 
-## Injestion Pipeline Setup
+## 🔧 Injestion Pipeline Setup
 
 - Config Driven: 
 - For DDL statements and S3 path
