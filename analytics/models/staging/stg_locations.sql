@@ -6,7 +6,7 @@
 
 {{ config(
     materialized='view',
-    tags=['staging', 'pos']
+    tags=['staging']
 ) }}
 
 WITH source_data AS (

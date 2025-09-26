@@ -10,7 +10,7 @@
 ) }}
 
 WITH menu_base AS (
-    SELECT * FROM {{ ref('stg_pos_menu') }}
+    SELECT * FROM {{ ref('stg_menu') }}
     WHERE has_valid_pricing = TRUE
 ),
 
