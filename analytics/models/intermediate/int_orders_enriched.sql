@@ -10,15 +10,15 @@
 ) }}
 
 WITH order_headers AS (
-    SELECT * FROM {{ ref('stg_pos_order_headers') }}
+    SELECT * FROM {{ ref('stg_order_headers') }}
 ),
 
 order_details AS (
-    SELECT * FROM {{ ref('stg_pos_order_details') }}
+    SELECT * FROM {{ ref('stg_order_details') }}
 ),
 
 menu_items AS (
-    SELECT * FROM {{ ref('stg_pos_menu') }}
+    SELECT * FROM {{ ref('stg_menu') }}
 ),
 
 order_detail_aggregated AS (
