@@ -1,0 +1,12 @@
+models:
+  - name: stg_truck
+    columns:
+      - name: truck_id
+        tests: [not_null]
+
+sources:
+  - name: bronze
+    database: default
+    tables:
+      - name: raw_truck
+        description: Raw ingested truck

@@ -39,25 +39,5 @@ models:
 
 
 
-seeds:
-  analytics:
-    +quote_columns: false
-    events_seed:
-      +column_types:
-        event_id: String
-        event_ts: DateTime
-        user_id: String
-        session_id: String
-        event_type: LowCardinality(String)
-        product_id: Nullable(String)
-        price: Nullable(Float64)
-    orders_seed:
-      +column_types:
-        order_id: String
-        order_ts: DateTime
-        user_id: String
-        order_amount: Float64
-        currency: String
-
 
 

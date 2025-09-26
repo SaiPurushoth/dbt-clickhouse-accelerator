@@ -1,45 +1,155 @@
-Overview
-========
+# dbt-ClickHouse Accelerator 🚚🍔
 
-Welcome to Astronomer! This project was generated after you ran 'astro dev init' using the Astronomer CLI. This readme describes the contents of the project, as well as how to run Apache Airflow on your local machine.
+A complete **end-to-end analytics starter** that integrates:
 
-Project Contents
-================
+- **ClickHouse** → Fast OLAP database
+- **dbt** → Transformations (bronze → silver → gold layers)
+- **Airflow + Cosmos** → Orchestration
+- **Astro (Docker)** → Local Airflow runtime
 
-Your Astro project contains the following files and folders:
+This project demonstrates a **Food Truck Analytics** pipeline: from raw orders, menus, trucks, and sessions → to cleaned marts with daily sales, funnels, and top locations.
 
-- dags: This folder contains the Python files for your Airflow DAGs. By default, this directory includes one example DAG:
-    - `example_astronauts`: This DAG shows a simple ETL pipeline example that queries the list of astronauts currently in space from the Open Notify API and prints a statement for each astronaut. The DAG uses the TaskFlow API to define tasks in Python, and dynamic task mapping to dynamically print a statement for each astronaut. For more on how this DAG works, see our [Getting started tutorial](https://www.astronomer.io/docs/learn/get-started-with-airflow).
-- Dockerfile: This file contains a versioned Astro Runtime Docker image that provides a differentiated Airflow experience. If you want to execute other commands or overrides at runtime, specify them here.
-- include: This folder contains any additional files that you want to include as part of your project. It is empty by default.
-- packages.txt: Install OS-level packages needed for your project by adding them to this file. It is empty by default.
-- requirements.txt: Install Python packages needed for your project by adding them to this file. It is empty by default.
-- plugins: Add custom or community plugins for your project to this file. It is empty by default.
-- airflow_settings.yaml: Use this local-only file to specify Airflow Connections, Variables, and Pools instead of entering them in the Airflow UI as you develop DAGs in this project.
+---
 
-Deploy Your Project Locally
-===========================
+## ✨ Features
 
-Start Airflow on your local machine by running 'astro dev start'.
+- ✅ Ready-to-use **local stack** with Astro CLI  
+- ✅ **Cosmos integration** to run dbt commands inside Airflow DAGs  
+- ✅ **ClickHouse adapter for dbt** preconfigured  
+- ✅ **Food Truck demo models** with seeds, tests, and marts  
+- ✅ Modular folder structure for DAGs, dbt project, and configs  
 
-This command will spin up five Docker containers on your machine, each for a different Airflow component:
+---
 
-- Postgres: Airflow's Metadata Database
-- Scheduler: The Airflow component responsible for monitoring and triggering tasks
-- DAG Processor: The Airflow component responsible for parsing DAGs
-- API Server: The Airflow component responsible for serving the Airflow UI and API
-- Triggerer: The Airflow component responsible for triggering deferred tasks
+## 🏗️ Architecture
 
-When all five containers are ready the command will open the browser to the Airflow UI at http://localhost:8080/. You should also be able to access your Postgres Database at 'localhost:5432/postgres' with username 'postgres' and password 'postgres'.
+```
+            ┌───────────────────────────────────┐
+            │         Astro (Docker)             │
+            │  Airflow: Webserver | Scheduler    │
+            └───────────────┬───────────────────┘
+                            │
+                      Cosmos Operator
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │     dbt       │
+                     │ (models/tests)│
+                     └──────┬────────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │  ClickHouse   │
+                     │ raw→bronze→gold
+                     └──────────────┘
+```
 
-Note: If you already have either of the above ports allocated, you can either [stop your existing Docker containers or change the port](https://www.astronomer.io/docs/astro/cli/troubleshoot-locally#ports-are-not-available-for-my-local-airflow-webserver).
+---
 
-Deploy Your Project to Astronomer
-=================================
+## 📂 Repository Layout
 
-If you have an Astronomer account, pushing code to a Deployment on Astronomer is simple. For deploying instructions, refer to Astronomer documentation: https://www.astronomer.io/docs/astro/deploy-code/
+```
+.
+├─ dags/                     # Airflow DAGs (Cosmos dbt orchestration + helpers)
+├─ analytics/                # dbt project (models, seeds, profiles)
+├─ include/                  # Assets available to Airflow at runtime
+├─ tests/                    # DAG/unit tests with pytest
+├─ Dockerfile                # Astro base image + dependencies
+├─ requirements.txt          # Python deps (dbt, cosmos, clickhouse-connect, etc.)
+├─ docker-compose.override.yml
+└─ README.md
+```
 
-Contact
-=======
+---
 
-The Astronomer CLI is maintained with love by the Astronomer team. To report a bug or suggest a change, reach out to our support.
+## ⚡ Quickstart
+
+### 1. Install prerequisites
+- [Docker](https://docs.docker.com/get-docker/)  
+- [Astro CLI](https://www.astronomer.io/docs/astro/cli/install-cli)  
+
+### 2. Start Airflow (Astro)
+```bash
+# from repo root
+astro dev start
+```
+UI available at 👉 [http://localhost:8080](http://localhost:8080)  
+(Default: user `admin` / pwd `admin`)
+
+### 3. Configure connections
+In Airflow UI → *Admin → Connections*:
+
+### 4. Configure dbt
+Edit `analytics/profiles.yml`:
+
+
+### 5. Run pipeline
+- Trigger DAG: `dbt_food_truck_pipeline`
+- Tasks:
+  - `dbt_deps` → install packages
+  - `dbt_seed` → load demo CSVs
+  - `dbt_run` → build bronze/silver/gold models
+  - `dbt_test` → run tests
+
+---
+
+## 🍽️ Food Truck Demo Models
+
+**Raw (landing):**
+- `raw_truck`, `raw_menu`, `raw_order`, `raw_location`, `raw_sessions`
+
+**Bronze (staging):**
+- `stg_truck`, `stg_menu`, `stg_order`, `stg_location`
+
+**Silver (conformed):**
+- `orders_enriched` (orders + trucks + menus + geo)
+
+**Gold (marts):**
+- `mart_daily_sales` → sales KPIs
+- `mart_top_locations` → best-performing areas
+- `mart_funnel` → order funnel analysis
+- `mart_peak_hours` → hourly sales
+
+---
+
+## 🧪 Testing
+
+- **dbt tests**: run inside Airflow task `dbt_test`  
+- **DAG tests**:  
+```bash
+pytest -q
+```
+
+---
+
+## 🔧 Development workflow
+
+```bash
+# stop services
+astro dev stop
+
+# rebuild with deps
+astro dev restart --rebuild
+
+# view logs
+astro dev logs -f
+```
+
+---
+
+## 🚀 Roadmap
+
+- [ ] Add Kafka → ClickHouse streaming ingest example  
+- [ ] CI pipeline with `dbt build --warn-error`  
+- [ ] Preconfigured dashboards  
+
+---
+
+## 📜 License
+MIT (or update to your org’s preference)
+
+---
+
+## 🙌 Credits
+Built with ❤️ by [SaiPurushoth](https://github.com/SaiPurushoth)  
+Powered by **Astro**, **Airflow**, **dbt**, **Cosmos**, and **ClickHouse**
