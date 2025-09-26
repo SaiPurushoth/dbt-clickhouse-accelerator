@@ -1,6 +1,7 @@
-# Analytics Accelerator: Airflow-Cosmos + dbt + ClickHouse
+# 🚀 Open Source Analytics Accelerator: 
+# 📊 Airflow-Cosmos + dbt + ClickHouse
 
-A complete **open source end-to-end analytics platform** that integrates:
+A complete **end-to-end analytics platform** that integrates:
 
 - **ClickHouse** → Fast OLAP database
 - **dbt** → Transformations (bronze → silver → gold layers)
@@ -89,14 +90,37 @@ Edit `analytics/profiles.yml`:
 
 ### 5. Run pipeline
 
-- Trigger DAG: `dbt_food_truck_pipeline`
-- Tasks:
-  - `dbt_deps` → install packages
-  - `dbt_seed` → load demo CSVs
-  - `dbt_run` → build bronze/silver/gold models
-  - `dbt_test` → run tests
+- Trigger DAG: `food_truck_data_pipeline`
 
 ---
+
+### Injestion pipeline Setup
+
+- Config Driven: 
+- For DDL statements and S3 path
+- Edit `dags/config/tables_info.py`:
+
+**🔧 .evv file :**
+
+# ===============================================
+# CLICKHOUSE CONFIGURATION
+# ===============================================
+CLICKHOUSE_HOST=host.docker.internal
+CLICKHOUSE_PORT=8123
+CLICKHOUSE_USER=
+CLICKHOUSE_PASSWORD=
+CLICKHOUSE_DATABASE=
+
+# ===============================================
+# AWS S3 CONFIGURATION
+# ===============================================
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_REGION=us-east-1
+S3_BUCKET=your-bucket
+S3_PREFIX=food_truck/raw/
+
+
 
 ## 🍽️ Food Truck Demo Models
 
