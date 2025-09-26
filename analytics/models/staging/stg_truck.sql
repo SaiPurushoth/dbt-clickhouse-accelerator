@@ -19,58 +19,51 @@ cleaned_trucks AS (
         menu_type_id,
         franchise_id,
         
-        -- Clean location fields
-        INITCAP(TRIM(primary_city)) AS primary_city,
-        INITCAP(TRIM(region)) AS region_name,
+        UPPER(TRIM(primary_city)) AS primary_city,
+        UPPER(TRIM(region)) AS region_name,
         UPPER(TRIM(iso_region)) AS iso_region,
-        INITCAP(TRIM(country)) AS country_name,
+        UPPER(TRIM(country)) AS country_name,
         UPPER(TRIM(iso_country_code)) AS iso_country_code,
         
-        -- Convert franchise flag to boolean
-        CASE WHEN franchise_flag = 1 THEN TRUE ELSE FALSE END AS is_franchise,
+        -- Convert flags to 0/1
+        franchise_flag AS is_franchise,
+        ev_flag AS is_electric_vehicle,
         
-        -- Clean vehicle information
-        year AS vehicle_year,
-        INITCAP(TRIM(make)) AS vehicle_make,
-        INITCAP(TRIM(model)) AS vehicle_model,
-        
-        -- Convert EV flag to boolean
-        CASE WHEN ev_flag = 1 THEN TRUE ELSE FALSE END AS is_electric_vehicle,
-        
+        year as vehicle_year,
+        UPPER(TRIM(make)) AS vehicle_make,
+        UPPER(TRIM(model)) AS vehicle_model,
         truck_opening_date,
         
-        -- Add vehicle age category
-        CASE 
-            WHEN year >= YEAR(CURRENT_DATE()) - 2 THEN 'New'
-            WHEN year >= YEAR(CURRENT_DATE()) - 5 THEN 'Standard'
-            WHEN year >= YEAR(CURRENT_DATE()) - 10 THEN 'Older'
-            ELSE 'Legacy'
-        END AS vehicle_age_category,
+        -- Vehicle age category
+        multiIf(
+            year >= year(today()) - 2, 'New',
+            year >= year(today()) - 5, 'Standard',
+            year >= year(today()) - 10, 'Older',
+            'Legacy'
+        ) AS vehicle_age_category,
         
-        -- Add operational status
-        CASE 
-            WHEN truck_opening_date > CURRENT_DATE() THEN 'Planned'
-            WHEN truck_opening_date <= CURRENT_DATE() THEN 'Active'
-            ELSE 'Unknown'
-        END AS operational_status,
+        -- Operational status
+        multiIf(
+            truck_opening_date > today(), 'Planned',
+            truck_opening_date <= today(), 'Active',
+            'Unknown'
+        ) AS operational_status,
         
-        -- Calculate days in operation
-        CASE 
-            WHEN truck_opening_date <= CURRENT_DATE()
-            THEN DATEDIFF('day', truck_opening_date, CURRENT_DATE())
-            ELSE 0
-        END AS days_in_operation,
+        -- Days in operation
+        if(truck_opening_date <= today(),
+           dateDiff('day', truck_opening_date, today()),
+           0) AS days_in_operation,
         
-        -- Add truck maturity classification
-        CASE 
-            WHEN truck_opening_date > CURRENT_DATE() THEN 'Pre-Launch'
-            WHEN DATEDIFF('day', truck_opening_date, CURRENT_DATE()) <= 90 THEN 'New Truck'
-            WHEN DATEDIFF('day', truck_opening_date, CURRENT_DATE()) <= 365 THEN 'Established'
-            ELSE 'Mature'
-        END AS truck_maturity,
+        -- Truck maturity
+        multiIf(
+            truck_opening_date > today(), 'Pre-Launch',
+            dateDiff('day', truck_opening_date, today()) <= 90, 'New Truck',
+            dateDiff('day', truck_opening_date, today()) <= 365, 'Established',
+            'Mature'
+        ) AS truck_maturity,
         
-        CURRENT_TIMESTAMP() AS created_ts,
-        CURRENT_TIMESTAMP() AS updated_ts
+        now() AS created_ts,
+        now() AS updated_ts
         
     FROM source_data
     WHERE truck_id IS NOT NULL

@@ -1,0 +1,198 @@
+# Test Cases for dbt Models - POS Data Pipeline
+
+version: 2
+
+models:
+  - name: int_orders_enriched
+    description: "Orders with aggregated line items and business context"
+    columns:
+      - name: order_id
+        description: "Primary key for orders"
+        tests:
+          - unique
+          - not_null
+
+      - name: line_item_count
+        description: "Number of line items in order"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 50 # Reasonable max for food orders
+
+      - name: total_items_ordered
+        description: "Total quantity of items"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+
+      - name: order_profit_margin_pct
+        description: "Profit margin percentage"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: -100
+              max_value: 100
+
+      - name: order_size_category
+        description: "Order size classification"
+        tests:
+          - accepted_values:
+              values: ["Single Item", "Small", "Medium", "Large", "Extra Large"]
+
+      - name: service_speed_category
+        description: "Service speed classification"
+        tests:
+          - accepted_values:
+              values: ["Very Fast", "Fast", "Standard", "Slow", "Very Slow"]
+
+      - name: revenue_category
+        description: "Revenue value classification"
+        tests:
+          - accepted_values:
+              values:
+                ["Low Value", "Medium Value", "High Value", "Premium Value"]
+
+    tests:
+      # Custom test: Calculated order total should match header total
+      - dbt_utils.expression_is_true:
+          expression: "ABS(calculated_order_total - order_total) <= 0.05"
+          config:
+            severity: warn
+
+      # Custom test: Category count should not exceed line item count
+      - dbt_utils.expression_is_true:
+          expression: "category_count <= line_item_count"
+
+  - name: int_menu_profitability
+    description: "Menu items with sales performance and profitability metrics"
+    columns:
+      - name: menu_item_id
+        description: "Primary key for menu items"
+        tests:
+          - unique
+          - not_null
+
+      - name: sales_performance_tier
+        description: "Sales volume classification"
+        tests:
+          - accepted_values:
+              values:
+                [
+                  "High Performer",
+                  "Medium Performer",
+                  "Low Performer",
+                  "New/Inactive",
+                ]
+
+      - name: profitability_tier
+        description: "Profit margin classification"
+        tests:
+          - accepted_values:
+              values:
+                ["High Margin", "Medium Margin", "Low Margin", "Unprofitable"]
+
+      - name: trend_status
+        description: "Recent sales trend"
+        tests:
+          - accepted_values:
+              values: ["Trending Up", "Stable", "Declining", "Inactive"]
+
+      - name: peak_meal_period
+        description: "Meal period with highest sales"
+        tests:
+          - accepted_values:
+              values: ["Breakfast", "Lunch", "Dinner", "No Clear Peak"]
+
+      - name: actual_profit_margin_pct
+        description: "Calculated profit margin"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: -100
+              max_value: 100
+
+    tests:
+      # Custom test: Total profit calculation accuracy
+      - dbt_utils.expression_is_true:
+          expression: "total_profit = (total_revenue - (total_quantity_sold * cost_of_goods_usd))"
+          config:
+            where: "total_quantity_sold > 0"
+
+      # Custom test: Recent performance should not exceed total performance
+      - dbt_utils.expression_is_true:
+          expression: "quantity_sold_30_days <= total_quantity_sold"
+
+  - name: int_customers_segmented
+    description: "Customer segmentation with RFM analysis and behavioral metrics"
+    columns:
+      - name: customer_id
+        description: "Primary key for customers"
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_segment
+        description: "RFM-based customer segment"
+        tests:
+          - accepted_values:
+              values:
+                [
+                  "VIP",
+                  "Loyal",
+                  "Regular",
+                  "At Risk",
+                  "New",
+                  "Churned",
+                  "Occasional",
+                ]
+
+      - name: digital_engagement_level
+        description: "Digital channel usage classification"
+        tests:
+          - accepted_values:
+              values:
+                [
+                  "Digital Native",
+                  "Digital Friendly",
+                  "Mixed Channel",
+                  "Traditional",
+                ]
+
+      - name: price_sensitivity
+        description: "Price sensitivity based on discount usage"
+        tests:
+          - accepted_values:
+              values:
+                [
+                  "High Price Sensitivity",
+                  "Moderate Price Sensitivity",
+                  "Low Price Sensitivity",
+                ]
+
+      - name: estimated_lifetime_value
+        description: "Calculated customer lifetime value"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 10000 # Adjust based on your business
+
+      - name: is_active_customer
+        description: "Activity status in last 90 days"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [true, false]
+
+    tests:
+      # Custom test: VIP customers should meet all criteria
+      - dbt_utils.expression_is_true:
+          expression: >
+            customer_segment != 'VIP' OR 
+            (days_since_last_order <= 30 AND total_orders >= 10 AND total_spent >= 200)
+
+      # Custom test: Churned customers should have no recent activity
+      - dbt_utils.expression_is_true:
+          expression: >
+            customer_segment != 'Churned' OR 
+            (days_since_last_order > 180 AND is_active_customer = FALSE)
