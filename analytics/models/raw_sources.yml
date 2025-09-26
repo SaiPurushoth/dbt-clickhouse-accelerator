@@ -1,0 +1,20 @@
+sources:
+  - name: bronze
+    database: default
+    tables:
+      - name: raw_truck
+        description: Raw ingested truck
+      - name: raw_customer_loyalty
+        description: Raw injested customer loyalty
+      - name: raw_country
+        description: Raw ingested country
+      - name: raw_franchise
+        description: Raw ingested franchise
+      - name: raw_location
+        description: Raw ingested location
+      - name: raw_menu
+        description: Raw ingested menu
+      - name: raw_order_detail
+        description: Raw ingested order detail
+      - name: raw_order_header
+        description: Raw ingested order header
