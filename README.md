@@ -1,4 +1,5 @@
-# 🚀 Open Source Analytics Accelerator: 
+# 🚀 Open Source Analytics Accelerator:
+
 # 📊 Airflow-Cosmos + dbt + ClickHouse
 
 A complete **end-to-end analytics platform** that integrates:
@@ -94,38 +95,26 @@ Edit `analytics/profiles.yml`:
 
 ---
 
-## 🔧 Injestion Pipeline Setup
+## 🔧 Ingestion Pipeline Setup
 
-- Config Driven: 
-- For DDL statements and S3 path
-- Edit `dags/config/tables_info.py`:
+- Config Driven:
+  DDL statements and S3 paths in `dags/config/tables_info.py`, and set the following environment variables in your `.env` file:
 
-**🔧 .evv file :**
-
-**CLICKHOUSE CONFIGURATION**
-
+```env
+# ⚙️ ClickHouse Configuration
 CLICKHOUSE_HOST=host.docker.internal
-
 CLICKHOUSE_PORT=8123
-
 CLICKHOUSE_USER=
-
 CLICKHOUSE_PASSWORD=
-
 CLICKHOUSE_DATABASE=
 
-**AWS S3 CONFIGURATION**
-
+# ☁️ AWS S3 Configuration
 AWS_ACCESS_KEY_ID=
-
 AWS_SECRET_ACCESS_KEY=
-
 AWS_REGION=us-east-1
-
 S3_BUCKET=your-bucket
-
 S3_PREFIX=food_truck/raw/
-
+```
 
 ## 🍽️ Food Truck Demo Models
 
