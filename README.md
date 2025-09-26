@@ -13,11 +13,11 @@ This project demonstrates a **Food Truck Analytics** pipeline: from raw orders, 
 
 ## ✨ Features
 
-- ✅ Ready-to-use **local stack** with Astro CLI  
-- ✅ **Cosmos integration** to run dbt commands inside Airflow DAGs  
-- ✅ **ClickHouse adapter for dbt** preconfigured  
-- ✅ **Food Truck demo models** with seeds, tests, and marts  
-- ✅ Modular folder structure for DAGs, dbt project, and configs  
+- ✅ Ready-to-use **local stack** with Astro CLI
+- ✅ **Cosmos integration** to run dbt commands inside Airflow DAGs
+- ✅ **ClickHouse adapter for dbt** preconfigured
+- ✅ **Food Truck demo models** with seeds, tests, and marts
+- ✅ Modular folder structure for DAGs, dbt project, and configs
 
 ---
 
@@ -40,7 +40,7 @@ This project demonstrates a **Food Truck Analytics** pipeline: from raw orders, 
                             ▼
                      ┌──────────────---┐
                      │  ClickHouse     │
-                     │ raw→bronze→gold | 
+                     │ raw→bronze→gold |
                      └──────────────---┘
 ```
 
@@ -65,25 +65,30 @@ This project demonstrates a **Food Truck Analytics** pipeline: from raw orders, 
 ## ⚡ Quickstart
 
 ### 1. Install prerequisites
-- [Docker](https://docs.docker.com/get-docker/)  
-- [Astro CLI](https://www.astronomer.io/docs/astro/cli/install-cli)  
+
+- [Docker](https://docs.docker.com/get-docker/)
+- [Astro CLI](https://www.astronomer.io/docs/astro/cli/install-cli)
 
 ### 2. Start Airflow (Astro)
+
 ```bash
 # from repo root
 astro dev start
 ```
+
 UI available at 👉 [http://localhost:8080](http://localhost:8080)  
 (Default: user `admin` / pwd `admin`)
 
 ### 3. Configure connections
-In Airflow UI → *Admin → Connections*:
+
+In Airflow UI → _Admin → Connections_:
 
 ### 4. Configure dbt
+
 Edit `analytics/profiles.yml`:
 
-
 ### 5. Run pipeline
+
 - Trigger DAG: `dbt_food_truck_pipeline`
 - Tasks:
   - `dbt_deps` → install packages
@@ -96,20 +101,23 @@ Edit `analytics/profiles.yml`:
 ## 🍽️ Food Truck Demo Models
 
 **Raw (landing):**
+
 - `raw_truck`, `raw_menu`, `raw_order`, `raw_location`,..
 
 ![alt text](images/1*CgPOptqGehCjUiT1UcydXg.webp)
 
 **Silver (conformed):**
+
 - - `stg_truck`, `stg_menu`, `stg_order`, `stg_location`,..
 
 ![alt text](images/1*6SWDcO5dhoM_EnfYzyrnZw.webp)
 
 **intermediate (conformed):**
+
 - - `int_customer_segmented`, `int_menu_profitability`,
 
-
 **Gold (marts):**
+
 - `mart_daily_sales` → sales KPIs
 - `mart_top_locations` → best-performing areas
 - `mart_funnel` → order funnel analysis
@@ -121,8 +129,9 @@ Edit `analytics/profiles.yml`:
 
 ## 🧪 Testing (optional)
 
-- **dbt tests**: run inside Airflow task `dbt_test`  
-- **DAG tests**:  
+- **dbt tests**: run inside Airflow task `dbt_test`
+- **DAG tests**:
+
 ```bash
 pytest -q
 ```
@@ -146,16 +155,19 @@ astro dev logs -f
 
 ## 🚀 Roadmap
 
-- [ ] Add Kafka → ClickHouse streaming ingest example  
-- [ ] CI pipeline with `dbt build --warn-error`  
-- [ ] Preconfigured dashboards - `superset`  
+- [ ] Add Kafka → ClickHouse streaming ingest example
+- [ ] CI pipeline with `dbt build --warn-error`
+- [ ] Preconfigured dashboards - `superset`
+
 ---
 
 ## 📜 License
+
 MIT (or update to your org’s preference)
 
 ---
 
 ## 🙌 Credits
+
 Built with ❤️ by [SaiPurushoth](https://github.com/SaiPurushoth)  
 Powered by **Astro**, **Airflow**, **dbt**, **Cosmos**, and **ClickHouse**
