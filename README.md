@@ -101,18 +101,29 @@ Edit `analytics/profiles.yml`:
 - Edit `dags/config/tables_info.py`:
 
 **🔧 .evv file :**
+
 **CLICKHOUSE CONFIGURATION**
+
 CLICKHOUSE_HOST=host.docker.internal
+
 CLICKHOUSE_PORT=8123
+
 CLICKHOUSE_USER=
+
 CLICKHOUSE_PASSWORD=
+
 CLICKHOUSE_DATABASE=
 
 **AWS S3 CONFIGURATION**
+
 AWS_ACCESS_KEY_ID=
+
 AWS_SECRET_ACCESS_KEY=
+
 AWS_REGION=us-east-1
+
 S3_BUCKET=your-bucket
+
 S3_PREFIX=food_truck/raw/
 
 
