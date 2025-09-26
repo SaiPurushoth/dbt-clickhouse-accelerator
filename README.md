@@ -94,32 +94,26 @@ Edit `analytics/profiles.yml`:
 
 ---
 
-### Injestion pipeline Setup
+## Injestion Pipeline Setup
 
 - Config Driven: 
 - For DDL statements and S3 path
 - Edit `dags/config/tables_info.py`:
 
 **🔧 .evv file :**
-
-# ===============================================
-# CLICKHOUSE CONFIGURATION
-# ===============================================
+**CLICKHOUSE CONFIGURATION**
 CLICKHOUSE_HOST=host.docker.internal
 CLICKHOUSE_PORT=8123
 CLICKHOUSE_USER=
 CLICKHOUSE_PASSWORD=
 CLICKHOUSE_DATABASE=
 
-# ===============================================
-# AWS S3 CONFIGURATION
-# ===============================================
+**AWS S3 CONFIGURATION**
 AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 AWS_REGION=us-east-1
 S3_BUCKET=your-bucket
 S3_PREFIX=food_truck/raw/
-
 
 
 ## 🍽️ Food Truck Demo Models
