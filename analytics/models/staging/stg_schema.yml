@@ -1,0 +1,5 @@
+models:
+  - name: stg_truck
+    columns:
+      - name: truck_id
+        tests: [not_null]
