@@ -1,6 +1,6 @@
-# dbt-ClickHouse Accelerator 🚚🍔
+# Analytics Accelerator: Airflow-Cosmos + dbt + ClickHouse
 
-A complete **end-to-end analytics starter** that integrates:
+A complete **open source end-to-end analytics platform** that integrates:
 
 - **ClickHouse** → Fast OLAP database
 - **dbt** → Transformations (bronze → silver → gold layers)
@@ -25,23 +25,23 @@ This project demonstrates a **Food Truck Analytics** pipeline: from raw orders, 
 
 ```
             ┌───────────────────────────────────┐
-            │         Astro (Docker)             │
-            │  Airflow: Webserver | Scheduler    │
+            │         Astro (Docker)            │
+            │  Airflow: Webserver | Scheduler   │
             └───────────────┬───────────────────┘
                             │
                       Cosmos Operator
                             │
                             ▼
-                     ┌──────────────┐
+                     ┌──────────────-┐
                      │     dbt       │
                      │ (models/tests)│
                      └──────┬────────┘
                             │
                             ▼
-                     ┌──────────────┐
-                     │  ClickHouse   │
-                     │ raw→bronze→gold
-                     └──────────────┘
+                     ┌──────────────---┐
+                     │  ClickHouse     │
+                     │ raw→bronze→gold | 
+                     └──────────────---┘
 ```
 
 ---
@@ -96,13 +96,18 @@ Edit `analytics/profiles.yml`:
 ## 🍽️ Food Truck Demo Models
 
 **Raw (landing):**
-- `raw_truck`, `raw_menu`, `raw_order`, `raw_location`, `raw_sessions`
+- `raw_truck`, `raw_menu`, `raw_order`, `raw_location`,..
 
-**Bronze (staging):**
-- `stg_truck`, `stg_menu`, `stg_order`, `stg_location`
+![alt text](images/1*CgPOptqGehCjUiT1UcydXg.webp)
 
 **Silver (conformed):**
-- `orders_enriched` (orders + trucks + menus + geo)
+- - `stg_truck`, `stg_menu`, `stg_order`, `stg_location`,..
+
+![alt text](images/1*6SWDcO5dhoM_EnfYzyrnZw.webp)
+
+**intermediate (conformed):**
+- - `int_customer_segmented`, `int_menu_profitability`,
+
 
 **Gold (marts):**
 - `mart_daily_sales` → sales KPIs
@@ -110,9 +115,11 @@ Edit `analytics/profiles.yml`:
 - `mart_funnel` → order funnel analysis
 - `mart_peak_hours` → hourly sales
 
+![alt text](images/1*DeAIiwRLu79CiTrWdcMtDQ.webp)
+
 ---
 
-## 🧪 Testing
+## 🧪 Testing (optional)
 
 - **dbt tests**: run inside Airflow task `dbt_test`  
 - **DAG tests**:  
@@ -141,8 +148,7 @@ astro dev logs -f
 
 - [ ] Add Kafka → ClickHouse streaming ingest example  
 - [ ] CI pipeline with `dbt build --warn-error`  
-- [ ] Preconfigured dashboards  
-
+- [ ] Preconfigured dashboards - `superset`  
 ---
 
 ## 📜 License
