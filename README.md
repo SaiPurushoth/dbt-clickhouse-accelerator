@@ -120,19 +120,19 @@ S3_PREFIX=food_truck/raw/
 
 **Raw (landing):**
 
-- `raw_truck`, `raw_menu`, `raw_order`, `raw_location`,..
+- `raw_truck`, `raw_menu`, `raw_order`, `raw_location`,etc..
 
 ![alt text](images/1*CgPOptqGehCjUiT1UcydXg.webp)
 
 **Silver (conformed):**
 
-- - `stg_truck`, `stg_menu`, `stg_order`, `stg_location`,..
+- - `stg_truck`, `stg_menu`, `stg_order`, `stg_location`,etc..
 
 ![alt text](images/1*6SWDcO5dhoM_EnfYzyrnZw.webp)
 
 **intermediate (conformed):**
 
-- - `int_customer_segmented`, `int_menu_profitability`,
+- - `int_customer_segmented`, `int_menu_profitability`,etc..
 
 **Gold (marts):**
 
