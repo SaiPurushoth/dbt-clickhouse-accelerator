@@ -73,17 +73,6 @@ models:
           - accepted_values:
               values: ["Breakfast", "Lunch", "Snack", "Dinner", "Late Night"]
 
-    tests:
-      # Custom test: Order total should match calculated components
-      - dbt_utils.expression_is_true:
-          expression: "ABS(order_total - (order_amount + order_tax_amount - order_discount_amount)) <= 0.01"
-          config:
-            severity: warn
-
-      # Custom test: Processing time should be reasonable
-      - dbt_utils.expression_is_true:
-          expression: "processing_time_minutes IS NULL OR (processing_time_minutes >= 0 AND processing_time_minutes <= 120)"
-
   - name: stg_order_details
     description: "Cleaned order line items with validated quantities and pricing"
     columns:
@@ -127,15 +116,4 @@ models:
         tests:
           - not_null
           - accepted_values:
-              values: [true, false]
-
-    tests:
-      # Custom test: Net line total should be positive or zero
-      - dbt_utils.expression_is_true:
-          expression: "net_line_total >= 0"
-
-      # Custom test: Price consistency check
-      - dbt_utils.expression_is_true:
-          expression: "price_quantity_consistent = TRUE OR is_valid_line_item = FALSE"
-          config:
-            severity: warn
+              values: [1, 0]

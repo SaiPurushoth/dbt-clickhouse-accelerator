@@ -42,20 +42,20 @@ cleaned_menu AS (
            0) AS profit_margin_pct,
         
         -- Handle JSON fields appropriately for ClickHouse
-        JSONExtractFloat(menu_item_health_metrics_obj, 'calories') AS calories,
-        JSONExtractFloat(menu_item_health_metrics_obj, 'protein_g') AS protein_grams,
-        JSONExtractFloat(menu_item_health_metrics_obj, 'carbs_g') AS carbs_grams,
-        JSONExtractFloat(menu_item_health_metrics_obj, 'fat_g') AS fat_grams,
-        JSONExtractFloat(menu_item_health_metrics_obj, 'sodium_mg') AS sodium_mg,
+        JSONExtractFloat(toJSONString(menu_item_health_metrics_obj), 'calories') AS calories,
+        JSONExtractFloat(toJSONString(menu_item_health_metrics_obj), 'protein_g') AS protein_grams,
+        JSONExtractFloat(toJSONString(menu_item_health_metrics_obj), 'carbs_g') AS carbs_grams,
+        JSONExtractFloat(toJSONString(menu_item_health_metrics_obj), 'fat_g') AS fat_grams,
+        JSONExtractFloat(toJSONString(menu_item_health_metrics_obj), 'sodium_mg') AS sodium_mg,
         
         -- Dietary flags
-        (JSONExtractBool(menu_item_health_metrics_obj, 'vegetarian') = 1 
+        (JSONExtractBool(toJSONString(menu_item_health_metrics_obj), 'vegetarian') = 1 
          OR match(UPPER(menu_item_name), '(VEGGIE|VEGETARIAN)')) AS is_vegetarian,
         
-        (JSONExtractBool(menu_item_health_metrics_obj, 'vegan') = 1 
+        (JSONExtractBool(toJSONString(menu_item_health_metrics_obj), 'vegan') = 1 
          OR match(UPPER(menu_item_name), 'VEGAN')) AS is_vegan,
         
-        (JSONExtractBool(menu_item_health_metrics_obj, 'gluten_free') = 1 
+        (JSONExtractBool(toJSONString(menu_item_health_metrics_obj), 'gluten_free') = 1 
          OR match(UPPER(menu_item_name), '(GLUTEN FREE|GF)')) AS is_gluten_free,
         
         -- Pricing validation flags

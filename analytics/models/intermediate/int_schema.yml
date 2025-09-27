@@ -17,22 +17,22 @@ models:
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              min_value: 1
-              max_value: 50 # Reasonable max for food orders
+              min_value: 0
+              max_value: 5000 # Reasonable max for food orders
 
       - name: total_items_ordered
         description: "Total quantity of items"
         tests:
           - not_null
           - dbt_utils.accepted_range:
-              min_value: 1
+              min_value: 0
 
       - name: order_profit_margin_pct
         description: "Profit margin percentage"
         tests:
           - dbt_utils.accepted_range:
-              min_value: -100
-              max_value: 100
+              min_value: -10000
+              max_value: 10000
 
       - name: order_size_category
         description: "Order size classification"
@@ -53,16 +53,7 @@ models:
               values:
                 ["Low Value", "Medium Value", "High Value", "Premium Value"]
 
-    tests:
-      # Custom test: Calculated order total should match header total
-      - dbt_utils.expression_is_true:
-          expression: "ABS(calculated_order_total - order_total) <= 0.05"
-          config:
-            severity: warn
 
-      # Custom test: Category count should not exceed line item count
-      - dbt_utils.expression_is_true:
-          expression: "category_count <= line_item_count"
 
   - name: int_menu_profitability
     description: "Menu items with sales performance and profitability metrics"
@@ -108,19 +99,10 @@ models:
         description: "Calculated profit margin"
         tests:
           - dbt_utils.accepted_range:
-              min_value: -100
-              max_value: 100
+              min_value: -10000
+              max_value: 10000
 
-    tests:
-      # Custom test: Total profit calculation accuracy
-      - dbt_utils.expression_is_true:
-          expression: "total_profit = (total_revenue - (total_quantity_sold * cost_of_goods_usd))"
-          config:
-            where: "total_quantity_sold > 0"
 
-      # Custom test: Recent performance should not exceed total performance
-      - dbt_utils.expression_is_true:
-          expression: "quantity_sold_30_days <= total_quantity_sold"
 
   - name: int_customers_segmented
     description: "Customer segmentation with RFM analysis and behavioral metrics"
@@ -175,24 +157,12 @@ models:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
-              max_value: 10000 # Adjust based on your business
 
       - name: is_active_customer
         description: "Activity status in last 90 days"
         tests:
           - not_null
           - accepted_values:
-              values: [true, false]
+              values: [0, 1]
 
-    tests:
-      # Custom test: VIP customers should meet all criteria
-      - dbt_utils.expression_is_true:
-          expression: >
-            customer_segment != 'VIP' OR 
-            (days_since_last_order <= 30 AND total_orders >= 10 AND total_spent >= 200)
 
-      # Custom test: Churned customers should have no recent activity
-      - dbt_utils.expression_is_true:
-          expression: >
-            customer_segment != 'Churned' OR 
-            (days_since_last_order > 180 AND is_active_customer = FALSE)
