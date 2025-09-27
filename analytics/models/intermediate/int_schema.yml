@@ -1,0 +1,168 @@
+# Test Cases for dbt Models - POS Data Pipeline
+
+version: 2
+
+models:
+  - name: int_orders_enriched
+    description: "Orders with aggregated line items and business context"
+    columns:
+      - name: order_id
+        description: "Primary key for orders"
+        tests:
+          - unique
+          - not_null
+
+      - name: line_item_count
+        description: "Number of line items in order"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 5000 # Reasonable max for food orders
+
+      - name: total_items_ordered
+        description: "Total quantity of items"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+      - name: order_profit_margin_pct
+        description: "Profit margin percentage"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: -10000
+              max_value: 10000
+
+      - name: order_size_category
+        description: "Order size classification"
+        tests:
+          - accepted_values:
+              values: ["Single Item", "Small", "Medium", "Large", "Extra Large"]
+
+      - name: service_speed_category
+        description: "Service speed classification"
+        tests:
+          - accepted_values:
+              values: ["Very Fast", "Fast", "Standard", "Slow", "Very Slow"]
+
+      - name: revenue_category
+        description: "Revenue value classification"
+        tests:
+          - accepted_values:
+              values:
+                ["Low Value", "Medium Value", "High Value", "Premium Value"]
+
+
+
+  - name: int_menu_profitability
+    description: "Menu items with sales performance and profitability metrics"
+    columns:
+      - name: menu_item_id
+        description: "Primary key for menu items"
+        tests:
+          - unique
+          - not_null
+
+      - name: sales_performance_tier
+        description: "Sales volume classification"
+        tests:
+          - accepted_values:
+              values:
+                [
+                  "High Performer",
+                  "Medium Performer",
+                  "Low Performer",
+                  "New/Inactive",
+                ]
+
+      - name: profitability_tier
+        description: "Profit margin classification"
+        tests:
+          - accepted_values:
+              values:
+                ["High Margin", "Medium Margin", "Low Margin", "Unprofitable"]
+
+      - name: trend_status
+        description: "Recent sales trend"
+        tests:
+          - accepted_values:
+              values: ["Trending Up", "Stable", "Declining", "Inactive"]
+
+      - name: peak_meal_period
+        description: "Meal period with highest sales"
+        tests:
+          - accepted_values:
+              values: ["Breakfast", "Lunch", "Dinner", "No Clear Peak"]
+
+      - name: actual_profit_margin_pct
+        description: "Calculated profit margin"
+        tests:
+          - dbt_utils.accepted_range:
+              min_value: -10000
+              max_value: 10000
+
+
+
+  - name: int_customers_segmented
+    description: "Customer segmentation with RFM analysis and behavioral metrics"
+    columns:
+      - name: customer_id
+        description: "Primary key for customers"
+        tests:
+          - unique
+          - not_null
+
+      - name: customer_segment
+        description: "RFM-based customer segment"
+        tests:
+          - accepted_values:
+              values:
+                [
+                  "VIP",
+                  "Loyal",
+                  "Regular",
+                  "At Risk",
+                  "New",
+                  "Churned",
+                  "Occasional",
+                ]
+
+      - name: digital_engagement_level
+        description: "Digital channel usage classification"
+        tests:
+          - accepted_values:
+              values:
+                [
+                  "Digital Native",
+                  "Digital Friendly",
+                  "Mixed Channel",
+                  "Traditional",
+                ]
+
+      - name: price_sensitivity
+        description: "Price sensitivity based on discount usage"
+        tests:
+          - accepted_values:
+              values:
+                [
+                  "High Price Sensitivity",
+                  "Moderate Price Sensitivity",
+                  "Low Price Sensitivity",
+                ]
+
+      - name: estimated_lifetime_value
+        description: "Calculated customer lifetime value"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+
+      - name: is_active_customer
+        description: "Activity status in last 90 days"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [0, 1]
+
+

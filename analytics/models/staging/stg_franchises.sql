@@ -18,11 +18,11 @@ cleaned_franchises AS (
         franchise_id,
         
         -- Combine and clean names
-        TRIM(CONCAT(
-            COALESCE(INITCAP(TRIM(first_name)), ''),
+        concat(
+            ifNull(UPPER(TRIM(first_name)), ''),
             ' ',
-            COALESCE(INITCAP(TRIM(last_name)), '')
-        )) AS franchise_owner_name,
+            ifNull(UPPER(TRIM(last_name)), '')
+        ) AS franchise_owner_name,
         
         first_name,
         last_name,
@@ -32,33 +32,23 @@ cleaned_franchises AS (
         INITCAP(TRIM(country)) AS country_name,
         
         -- Clean and validate email
-        CASE 
-            WHEN e_mail RLIKE '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'
-            THEN LOWER(TRIM(e_mail))
-            ELSE NULL
-        END AS email,
+        if(match(e_mail, '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'),
+           LOWER(TRIM(e_mail)),
+           NULL) AS email,
         
         -- Clean phone number (remove special characters)
-        REGEXP_REPLACE(
+        replaceRegexpAll(
             TRIM(phone_number), 
             '[^0-9+]', 
             ''
         ) AS phone_number,
         
         -- Add validation flags
-        CASE 
-            WHEN first_name IS NOT NULL AND last_name IS NOT NULL THEN TRUE
-            ELSE FALSE
-        END AS has_complete_name,
+        (first_name IS NOT NULL AND last_name IS NOT NULL) AS has_complete_name,
+        match(e_mail, '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$') AS has_valid_email,
         
-        CASE 
-            WHEN e_mail RLIKE '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'
-            THEN TRUE
-            ELSE FALSE
-        END AS has_valid_email,
-        
-        CURRENT_TIMESTAMP() AS created_ts,
-        CURRENT_TIMESTAMP() AS updated_ts
+        now() AS created_ts,
+        now() AS updated_ts
         
     FROM source_data
     WHERE franchise_id IS NOT NULL

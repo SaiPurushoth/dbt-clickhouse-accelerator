@@ -25,54 +25,46 @@ cleaned_order_details AS (
         menu_item_id,
         
         -- Clean discount ID
-        NULLIF(TRIM(discount_id), '') AS discount_id,
+        nullIf(TRIM(discount_id), '') AS discount_id,
         
         line_number,
         
         -- Validate quantity
-        CASE 
-            WHEN quantity > 0 AND quantity <= 99 THEN quantity
-            WHEN quantity > 99 THEN 99  -- Cap at reasonable maximum
-            ELSE 1  -- Default to 1 if invalid
-        END AS quantity,
+        multiIf(
+            quantity > 0 AND quantity <= 99, quantity,
+            quantity > 99, 99,  -- Cap at reasonable maximum
+            1  -- Default to 1 if invalid
+        ) AS quantity,
         
         -- Clean pricing
-        COALESCE(unit_price, 0) AS unit_price,
-        COALESCE(price, 0) AS line_total,
-        COALESCE(TRY_CAST(order_item_discount_amount AS DECIMAL(10,4)), 0) AS line_discount_amount,
+        ifNull(unit_price, 0) AS unit_price,
+        ifNull(price, 0) AS line_total,
+        ifNull(toDecimal64(order_item_discount_amount, 4), 0) AS line_discount_amount,
         
         -- Calculate derived metrics
-        CASE 
-            WHEN quantity > 0 AND price > 0
-            THEN price / quantity
-            ELSE unit_price
-        END AS calculated_unit_price,
+        if(
+            quantity > 0 AND price > 0,
+            price / quantity,
+            unit_price
+        ) AS calculated_unit_price,
         
         -- Calculate line discount percentage
-        CASE 
-            WHEN price > 0 
-            THEN (TRY_CAST(order_item_discount_amount AS DECIMAL(10,4)) / price) * 100
-            ELSE 0
-        END AS line_discount_percentage,
+        if(
+            price > 0,
+            (toDecimal64(order_item_discount_amount, 4) / price) * 100,
+            0
+        ) AS line_discount_percentage,
         
         -- Calculate net line total (after discount)
-        price - COALESCE(TRY_CAST(order_item_discount_amount AS DECIMAL(10,4)), 0) AS net_line_total,
+        price - ifNull(toDecimal64(order_item_discount_amount, 4), 0) AS net_line_total,
         
         -- Data quality flags
-        CASE 
-            WHEN quantity > 0 AND unit_price >= 0 AND price >= 0 
-            THEN TRUE
-            ELSE FALSE
-        END AS is_valid_line_item,
+        (quantity > 0 AND unit_price >= 0 AND price >= 0) AS is_valid_line_item,
         
-        CASE 
-            WHEN ABS(price - (quantity * unit_price)) <= 0.01  -- Allow for rounding
-            THEN TRUE
-            ELSE FALSE
-        END AS price_quantity_consistent,
+        (abs(price - (quantity * unit_price)) <= 0.01) AS price_quantity_consistent,
         
-        CURRENT_TIMESTAMP() AS created_ts,
-        CURRENT_TIMESTAMP() AS updated_ts
+        now() AS created_ts,
+        now() AS updated_ts
         
     FROM source_data
     WHERE order_detail_id IS NOT NULL

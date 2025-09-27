@@ -21,35 +21,35 @@ cleaned_locations AS (
         TRIM(placekey) AS placekey,
         
         -- Clean location description
-        INITCAP(TRIM(location)) AS location_name,
+        UPPER(TRIM(location)) AS location_name,
         
         -- Clean geographic fields
-        INITCAP(TRIM(city)) AS city_name,
-        INITCAP(TRIM(region)) AS region_name,
+        UPPER(TRIM(city)) AS city_name,
+        UPPER(TRIM(region)) AS region_name,
         UPPER(TRIM(iso_country_code)) AS iso_country_code,
-        INITCAP(TRIM(country)) AS country_name,
+        UPPER(TRIM(country)) AS country_name,
         
         -- Add location type classification
-        CASE 
-            WHEN UPPER(location) LIKE '%PARK%' THEN 'Park'
-            WHEN UPPER(location) LIKE '%DOWNTOWN%' OR UPPER(location) LIKE '%CITY CENTER%' THEN 'Downtown'
-            WHEN UPPER(location) LIKE '%BUSINESS%' OR UPPER(location) LIKE '%OFFICE%' THEN 'Business District'
-            WHEN UPPER(location) LIKE '%UNIVERSITY%' OR UPPER(location) LIKE '%COLLEGE%' THEN 'University'
-            WHEN UPPER(location) LIKE '%MARKET%' OR UPPER(location) LIKE '%FARMER%' THEN 'Market'
-            WHEN UPPER(location) LIKE '%FESTIVAL%' OR UPPER(location) LIKE '%EVENT%' THEN 'Event'
-            ELSE 'Other'
-        END AS location_type,
+        multiIf(
+            match(UPPER(location), 'PARK'), 'Park',
+            match(UPPER(location), '(DOWNTOWN|CITY CENTER)'), 'Downtown',
+            match(UPPER(location), '(BUSINESS|OFFICE)'), 'Business District',
+            match(UPPER(location), '(UNIVERSITY|COLLEGE)'), 'University',
+            match(UPPER(location), '(MARKET|FARMER)'), 'Market',
+            match(UPPER(location), '(FESTIVAL|EVENT)'), 'Event',
+            'Other'
+        ) AS location_type,
         
         -- Add foot traffic estimation
-        CASE 
-            WHEN UPPER(location) LIKE '%DOWNTOWN%' OR UPPER(location) LIKE '%CITY CENTER%' THEN 'High'
-            WHEN UPPER(location) LIKE '%BUSINESS%' OR UPPER(location) LIKE '%UNIVERSITY%' THEN 'Medium'
-            WHEN UPPER(location) LIKE '%PARK%' OR UPPER(location) LIKE '%MARKET%' THEN 'Medium'
-            ELSE 'Low'
-        END AS estimated_foot_traffic,
+        multiIf(
+            match(UPPER(location), '(DOWNTOWN|CITY CENTER)'), 'High',
+            match(UPPER(location), '(BUSINESS|UNIVERSITY)'), 'Medium',
+            match(UPPER(location), '(PARK|MARKET)'), 'Medium',
+            'Low'
+        ) AS estimated_foot_traffic,
         
-        CURRENT_TIMESTAMP() AS created_ts,
-        CURRENT_TIMESTAMP() AS updated_ts
+        now() AS created_ts,
+        now() AS updated_ts
         
     FROM source_data
     WHERE location_id IS NOT NULL

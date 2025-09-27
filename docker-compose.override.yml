@@ -2,17 +2,19 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server:latest
     container_name: clickhouse
+    env_file:
+      - .env
     ports:
-      - "8123:8123"
+      - "${CLICKHOUSE_PORT:-8123}:8123"
       - "9000:9000"
     volumes:
       - ./ch_data:/var/lib/clickhouse
       - ./ch_logs:/var/log/clickhouse-server
     environment:
       - CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT=1
-      - CLICKHOUSE_DB=default
-      - CLICKHOUSE_USER=dbt_user
-      - CLICKHOUSE_PASSWORD=dbt_password
+      - CLICKHOUSE_DB=${CLICKHOUSE_DATABASE:-default}
+      - CLICKHOUSE_USER=${CLICKHOUSE_USER:-dbt_user}
+      - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-dbt_password}
     ulimits:
       nofile:
         soft: 262144
