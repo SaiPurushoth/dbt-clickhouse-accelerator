@@ -18,116 +18,91 @@ cleaned_customers AS (
         customer_id,
         
         -- Clean name fields
-        INITCAP(TRIM(first_name)) AS first_name,
-        INITCAP(TRIM(last_name)) AS last_name,
+        UPPER(TRIM(first_name)) AS first_name,
+        UPPER(TRIM(last_name)) AS last_name,
         
-        -- Combine full name
-        TRIM(CONCAT(
-            COALESCE(INITCAP(TRIM(first_name)), ''),
+        -- Fix concat syntax
+        concat(
+            ifNull(UPPER(TRIM(first_name)), ''),
             ' ',
-            COALESCE(INITCAP(TRIM(last_name)), '')
-        )) AS customer_name,
+            ifNull(UPPER(TRIM(last_name)), '')
+        ) AS customer_name,
         
-        -- Clean location fields
-        INITCAP(TRIM(city)) AS city_name,
-        INITCAP(TRIM(country)) AS country_name,
+        -- Location fields
+        UPPER(TRIM(city)) AS city_name,
+        UPPER(TRIM(country)) AS country_name,
         UPPER(TRIM(postal_code)) AS postal_code,
         
-        -- Standardize language
-        CASE 
-            WHEN UPPER(TRIM(preferred_language)) IN ('EN', 'ENG', 'ENGLISH') THEN 'English'
-            WHEN UPPER(TRIM(preferred_language)) IN ('ES', 'ESP', 'SPANISH') THEN 'Spanish'
-            WHEN UPPER(TRIM(preferred_language)) IN ('FR', 'FRA', 'FRENCH') THEN 'French'
-            WHEN UPPER(TRIM(preferred_language)) IN ('DE', 'GER', 'GERMAN') THEN 'German'
-            WHEN UPPER(TRIM(preferred_language)) IN ('JA', 'JAP', 'JAPANESE') THEN 'Japanese'
-            ELSE INITCAP(TRIM(preferred_language))
-        END AS preferred_language,
+        -- Convert CASE to multiIf for better performance
+        multiIf(
+            UPPER(TRIM(preferred_language)) IN ('EN', 'ENG', 'ENGLISH'), 'English',
+            UPPER(TRIM(preferred_language)) IN ('ES', 'ESP', 'SPANISH'), 'Spanish',
+            UPPER(TRIM(preferred_language)) IN ('FR', 'FRA', 'FRENCH'), 'French',
+            UPPER(TRIM(preferred_language)) IN ('DE', 'GER', 'GERMAN'), 'German',
+            UPPER(TRIM(preferred_language)) IN ('JA', 'JAP', 'JAPANESE'), 'Japanese',
+            UPPER(TRIM(preferred_language))
+        ) AS preferred_language,
         
-        -- Standardize gender
-        CASE 
-            WHEN UPPER(TRIM(gender)) IN ('M', 'MALE') THEN 'Male'
-            WHEN UPPER(TRIM(gender)) IN ('F', 'FEMALE') THEN 'Female'
-            WHEN UPPER(TRIM(gender)) IN ('O', 'OTHER') THEN 'Other'
-            WHEN UPPER(TRIM(gender)) IN ('N', 'PREFER NOT TO SAY') THEN 'Prefer not to say'
-            ELSE 'Not specified'
-        END AS gender,
+        multiIf(
+            UPPER(TRIM(gender)) IN ('M', 'MALE'), 'Male',
+            UPPER(TRIM(gender)) IN ('F', 'FEMALE'), 'Female',
+            UPPER(TRIM(gender)) IN ('O', 'OTHER'), 'Other',
+            UPPER(TRIM(gender)) IN ('N', 'PREFER NOT TO SAY'), 'Prefer not to say',
+            'Not specified'
+        ) AS gender,
         
-        -- Clean favorite brand
-        INITCAP(TRIM(favourite_brand)) AS favourite_brand,
+        UPPER(TRIM(favourite_brand)) AS favourite_brand,
         
-        -- Standardize marital status
-        CASE 
-            WHEN UPPER(TRIM(marital_status)) IN ('S', 'SINGLE') THEN 'Single'
-            WHEN UPPER(TRIM(marital_status)) IN ('M', 'MARRIED') THEN 'Married'
-            WHEN UPPER(TRIM(marital_status)) IN ('D', 'DIVORCED') THEN 'Divorced'
-            WHEN UPPER(TRIM(marital_status)) IN ('W', 'WIDOWED') THEN 'Widowed'
-            ELSE 'Not specified'
-        END AS marital_status,
+        multiIf(
+            UPPER(TRIM(marital_status)) IN ('S', 'SINGLE'), 'Single',
+            UPPER(TRIM(marital_status)) IN ('M', 'MARRIED'), 'Married',
+            UPPER(TRIM(marital_status)) IN ('D', 'DIVORCED'), 'Divorced',
+            UPPER(TRIM(marital_status)) IN ('W', 'WIDOWED'), 'Widowed',
+            'Not specified'
+        ) AS marital_status,
         
-        -- Clean children count
-        COALESCE(TRY_CAST(children_count AS NUMBER), 0) AS children_count,
-        
+        children_count,
         sign_up_date,
         birthday_date,
         
-        -- Clean contact information
-        CASE 
-            WHEN e_mail RLIKE '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'
-            THEN LOWER(TRIM(e_mail))
-            ELSE NULL
-        END AS email,
+        -- Email validation
+        if(match(e_mail, '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$'),
+           LOWER(TRIM(e_mail)),
+           NULL) AS email,
         
-        REGEXP_REPLACE(TRIM(phone_number), '[^0-9+]', '') AS phone_number,
+        replaceRegexpAll(TRIM(phone_number), '[^0-9+]', '') AS phone_number,
         
-        -- Calculate age
-        CASE 
-            WHEN birthday_date IS NOT NULL
-            THEN DATEDIFF('year', birthday_date, CURRENT_DATE())
-            ELSE NULL
-        END AS age,
+        -- Date calculations
+        if(birthday_date IS NOT NULL,
+           dateDiff('year', birthday_date, today()),
+           NULL) AS age,
         
-        -- Add age group classification
-        CASE 
-            WHEN DATEDIFF('year', birthday_date, CURRENT_DATE()) < 25 THEN 'Gen Z'
-            WHEN DATEDIFF('year', birthday_date, CURRENT_DATE()) < 40 THEN 'Millennial'
-            WHEN DATEDIFF('year', birthday_date, CURRENT_DATE()) < 55 THEN 'Gen X'
-            WHEN DATEDIFF('year', birthday_date, CURRENT_DATE()) >= 55 THEN 'Boomer+'
-            ELSE 'Unknown'
-        END AS age_group,
+        multiIf(
+            dateDiff('year', birthday_date, today()) < 25, 'Gen Z',
+            dateDiff('year', birthday_date, today()) < 40, 'Millennial',
+            dateDiff('year', birthday_date, today()) < 55, 'Gen X',
+            dateDiff('year', birthday_date, today()) >= 55, 'Boomer+',
+            'Unknown'
+        ) AS age_group,
         
-        -- Calculate customer tenure
-        DATEDIFF('day', sign_up_date, CURRENT_DATE()) AS days_since_signup,
+        dateDiff('day', sign_up_date, today()) AS days_since_signup,
         
-        -- Add initial customer segment (will be enhanced in intermediate layer)
-        CASE 
-            WHEN DATEDIFF('day', sign_up_date, CURRENT_DATE()) <= 30 THEN 'New'
-            WHEN DATEDIFF('day', sign_up_date, CURRENT_DATE()) <= 90 THEN 'Recent'
-            WHEN DATEDIFF('day', sign_up_date, CURRENT_DATE()) <= 365 THEN 'Established'
-            ELSE 'Veteran'
-        END AS initial_segment,
+        multiIf(
+            dateDiff('day', sign_up_date, today()) <= 30, 'New',
+            dateDiff('day', sign_up_date, today()) <= 90, 'Recent',
+            dateDiff('day', sign_up_date, today()) <= 365, 'Established',
+            'Veteran'
+        ) AS initial_segment,
         
-        -- Data quality flags
-        CASE 
-            WHEN first_name IS NOT NULL AND last_name IS NOT NULL THEN TRUE
-            ELSE FALSE
-        END AS has_complete_name,
+        -- Boolean flags
+        (first_name IS NOT NULL AND last_name IS NOT NULL) AS has_complete_name,
+        match(e_mail, '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$') AS has_valid_email,
+        (birthday_date IS NOT NULL 
+         AND birthday_date <= today() 
+         AND birthday_date >= toDate('1900-01-01')) AS has_valid_birthday,
         
-        CASE 
-            WHEN e_mail RLIKE '^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}'
-            THEN TRUE
-            ELSE FALSE
-        END AS has_valid_email,
-        
-        CASE 
-            WHEN birthday_date IS NOT NULL 
-            AND birthday_date <= CURRENT_DATE() 
-            AND birthday_date >= '1900-01-01'
-            THEN TRUE
-            ELSE FALSE
-        END AS has_valid_birthday,
-        
-        CURRENT_TIMESTAMP() AS created_ts,
-        CURRENT_TIMESTAMP() AS updated_ts
+        now() AS created_ts,
+        now() AS updated_ts
         
     FROM source_data
     WHERE customer_id IS NOT NULL

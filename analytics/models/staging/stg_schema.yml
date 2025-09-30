@@ -1,5 +1,119 @@
+version: 2
+
 models:
+  - name: stg_countries
+    description: "Cleaned and standardized country and city data with region classifications"
+    columns:
+      - name: country_id
+        tests:
+          - not_null
+
+  - name: stg_franchises
+    description: "Cleaned franchise owner information with validated contact details"
+    columns:
+      - name: franchise_id
+        tests:
+          - not_null
+
+  - name: stg_locations
+    description: "Cleaned location data with business classifications and foot traffic estimates"
+    columns:
+      - name: location_id
+        tests:
+          - not_null
+
+  - name: stg_menu
+    description: "Cleaned menu items with standardized categories, validated pricing, and dietary flags"
+    columns:
+      - name: menu_id
+        tests:
+          - not_null
+
   - name: stg_truck
+    description: "Cleaned truck fleet data with operational status and sustainability classifications"
     columns:
       - name: truck_id
-        tests: [not_null]
+        tests:
+          - not_null
+
+  - name: stg_customer_loyalty
+    description: "Cleaned customer loyalty data with age groups and validation flags"
+    columns:
+      - name: customer_id
+        tests:
+          - not_null
+
+  - name: stg_order_headers
+    description: "Cleaned and standardized order header data from POS system"
+    columns:
+      - name: order_id
+        description: "Primary key for orders"
+        tests:
+          - unique
+          - not_null
+
+      - name: order_total
+        description: "Total order amount"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 1000 # Adjust based on your business
+
+      - name: order_channel
+        description: "Standardized order channel"
+        tests:
+          - accepted_values:
+              values:
+                ["Mobile App", "Walk-up", "Online", "Phone", "Kiosk", "Other"]
+
+      - name: meal_period
+        description: "Categorized meal period based on order time"
+        tests:
+          - accepted_values:
+              values: ["Breakfast", "Lunch", "Snack", "Dinner", "Late Night"]
+
+  - name: stg_order_details
+    description: "Cleaned order line items with validated quantities and pricing"
+    columns:
+      - name: order_detail_id
+        description: "Primary key for order line items"
+        tests:
+          - unique
+          - not_null
+
+      - name: order_id
+        description: "Foreign key to order headers"
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_pos_order_headers')
+              field: order_id
+
+      - name: menu_item_id
+        description: "Foreign key to menu items"
+        tests:
+          - not_null
+
+      - name: quantity
+        description: "Validated quantity ordered"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 1
+              max_value: 99
+
+      - name: unit_price
+        description: "Price per unit"
+        tests:
+          - not_null
+          - dbt_utils.accepted_range:
+              min_value: 0
+              max_value: 100 # Adjust based on your menu
+
+      - name: is_valid_line_item
+        description: "Data quality flag"
+        tests:
+          - not_null
+          - accepted_values:
+              values: [1, 0]
