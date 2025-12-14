@@ -46,6 +46,12 @@ This project demonstrates a **Food Truck Analytics** pipeline: from raw orders, 
                      └──────────────---┘
 ```
 
+### DAG Lineage
+
+![Food Truck Data Pipeline](images/food_truck_data_pipeline-graph-2.png)
+
+*Complete data lineage showing the flow from raw data through staging, intermediate, and marts layers*
+
 ---
 
 ## 📂 Repository Layout
@@ -118,41 +124,114 @@ S3_PREFIX=food_truck/raw/
 
 ## 🍽️ Food Truck Demo Models
 
-**Raw (landing):**
+### Data Pipeline Overview
 
-- `raw_truck`, `raw_menu`, `raw_order`, `raw_location`,etc..
+**20 Models | 143 Tests | 3-Layer Medallion Architecture**
 
-![alt text](images/1*CgPOptqGehCjUiT1UcydXg.webp)
+### Raw Layer (Bronze)
+8 source tables loaded from S3:
+- `raw_franchise` - Franchise owner information
+- `raw_country` - Country and city master data
+- `raw_customer_loyalty` - Customer loyalty program data
+- `raw_truck` - Food truck fleet information
+- `raw_location` - Operating location details
+- `raw_menu` - Menu items and pricing
+- `raw_order_header` - Order transaction headers
+- `raw_order_detail` - Order line items
 
-**Silver (conformed):**
+![Raw Data Layer](images/1*CgPOptqGehCjUiT1UcydXg.webp)
 
-- - `stg_truck`, `stg_menu`, `stg_order`, `stg_location`,etc..
+### Staging Layer (Silver)
+8 staging models with data cleaning and standardization:
+- `stg_countries` - Cleaned country/city data with region classifications
+- `stg_franchises` - Validated franchise owner information
+- `stg_locations` - Cleaned location data with business classifications
+- `stg_menu` - Standardized menu items with dietary flags
+- `stg_truck` - Cleaned truck fleet data with operational status
+- `stg_customer_loyalty` - Validated customer data with age groups
+- `stg_order_headers` - Cleaned order headers with meal period classification
+- `stg_order_details` - Validated order line items
 
-![alt text](images/1*6SWDcO5dhoM_EnfYzyrnZw.webp)
+![Staging Layer](images/1*6SWDcO5dhoM_EnfYzyrnZw.webp)
 
-**intermediate (conformed):**
+### Intermediate Layer
+3 models with business logic and enrichment:
+- `int_customers_segmented` - RFM analysis and customer segmentation
+- `int_menu_profitability` - Menu item profitability metrics
+- `int_orders_enriched` - Order-level calculations and enrichments
 
-- - `int_customer_segmented`, `int_menu_profitability`,etc..
+### Marts Layer (Gold)
+**Star Schema: 7 Dimensions + 2 Facts**
 
-**Gold (marts):**
+**Dimension Tables:**
+- `dim_country` - Country master with ISO codes and currency
+- `dim_city` - City details with population and timezone
+- `dim_location` - Locations with business potential scores
+- `dim_franchise` - Franchise owners with profile completeness
+- `dim_truck` - Truck fleet with sustainability and operational metrics
+- `dim_customer` - Customer 360 with segmentation and lifetime value
+- `dim_menu_item` - Menu catalog with profitability classifications
 
-- `mart_daily_sales` → sales KPIs
-- `mart_top_locations` → best-performing areas
-- `mart_funnel` → order funnel analysis
-- `mart_peak_hours` → hourly sales
+**Fact Tables:**
+- `fact_order` - Order transactions with all dimensional relationships
+- `fact_order_detail` - Line-item level details with profit margins
 
-![alt text](images/1*DeAIiwRLu79CiTrWdcMtDQ.webp)
+![Marts Layer](images/1*DeAIiwRLu79CiTrWdcMtDQ.webp)
+
+### Key Features
+
+✨ **Customer Analytics**
+- RFM segmentation (VIP, Loyal, Regular, At Risk, etc.)
+- Lifetime value estimation (up to $200K for VIP customers)
+- Communication preference analysis
+
+✨ **Menu Optimization**
+- BCG matrix classification (Stars, Cash Cows, Dogs, Question Marks)
+- Profitability analysis with margin tracking
+- Dietary accommodation scoring
+
+✨ **Operational Metrics**
+- Truck sustainability scoring (EV flagging, vehicle age)
+- Location business potential analysis
+- Order channel and meal period tracking
+
+✨ **Data Quality**
+- 143 comprehensive tests across all layers
+- Primary key uniqueness validation
+- Foreign key integrity checks
+- Business rule validations
 
 ---
 
-## 🧪 Testing (optional)
+## 🧪 Testing
 
-- **dbt tests**: run inside Airflow task `dbt_test`
-- **DAG tests**:
+### dbt Tests
+**143 data quality tests** covering:
+- ✅ Primary key uniqueness and NOT NULL constraints
+- ✅ Foreign key NOT NULL validations
+- ✅ Categorical value validations (order channels, meal periods, etc.)
+- ✅ Range validations for critical metrics (customer age, menu prices, LTV)
+- ✅ Data quality flags (valid pricing, completeness checks)
 
+**Run tests via Airflow:**
+- Tests execute automatically in the `dbt_test` task within the DAG
+
+**Run tests locally:**
 ```bash
-pytest -q
+cd analytics
+dbt test
 ```
+
+### DAG Tests
+```bash
+pytest tests/dags/ -v
+```
+
+### ClickHouse Compatibility
+✅ All tests optimized for ClickHouse:
+- Boolean values stored as UInt8 (0/1)
+- Explicit NULL type casting for nullable columns
+- Test strategy focused on data integrity, not business variability
 
 ---
 

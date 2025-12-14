@@ -17,8 +17,8 @@ WITH location_current AS (
         estimated_foot_traffic,
         
         -- Add coordinates (placeholder for future geocoding)
-        NULL AS latitude,
-        NULL AS longitude,
+        CAST(NULL AS Nullable(Float64)) AS latitude,
+        CAST(NULL AS Nullable(Float64)) AS longitude,
         
         -- Add business potential score
         CASE 

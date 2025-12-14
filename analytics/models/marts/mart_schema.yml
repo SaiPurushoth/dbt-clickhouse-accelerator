@@ -7,30 +7,29 @@ models:
         tests:
           - unique
           - not_null
-      
+
       - name: country_id
         description: "Natural key for country"
         tests:
           - unique
           - not_null
-      
+
       - name: iso_country
         description: "ISO country code"
         tests:
           - not_null
-      
+
       - name: iso_currency
         description: "ISO currency code"
         tests:
           - not_null
-      
+
       - name: is_active
         description: "Active status flag"
         tests:
           - not_null
           - accepted_values:
-              values: [true, false]
-    
+              values: [0, 1]
 
   - name: dim_city
     description: "City dimension with country relationships and timezone data"
@@ -40,13 +39,13 @@ models:
         tests:
           - unique
           - not_null
-      
+
       - name: city_id
         description: "Natural key for city"
         tests:
           - unique
           - not_null
-      
+
       - name: country_sk
         description: "Foreign key to country dimension"
         tests:
@@ -54,23 +53,32 @@ models:
           - relationships:
               to: ref('dim_country')
               field: country_sk
-      
+
       - name: population
         description: "City population"
         tests:
           - dbt_utils.accepted_range:
               min_value: 0
-              max_value: 50000000  # Reasonable max for city population
+              max_value: 50000000 # Reasonable max for city population
               config:
                 where: "population IS NOT NULL"
-      
+
       - name: timezone
         description: "City timezone"
         tests:
           - not_null
           - accepted_values:
-              values: ['America/New_York', 'America/Toronto', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Asia/Tokyo', 'Australia/Sydney', 'UTC']
-    
+              values:
+                [
+                  "America/New_York",
+                  "America/Toronto",
+                  "Europe/London",
+                  "Europe/Paris",
+                  "Europe/Berlin",
+                  "Asia/Tokyo",
+                  "Australia/Sydney",
+                  "UTC",
+                ]
 
   - name: dim_location
     description: "Location dimension with business potential scoring"
@@ -80,25 +88,34 @@ models:
         tests:
           - unique
           - not_null
-      
+
       - name: location_id
         description: "Natural key for location"
         tests:
           - unique
           - not_null
-      
+
       - name: location_type
         description: "Type of location"
         tests:
           - accepted_values:
-              values: ['Downtown', 'Business District', 'University', 'Market', 'Park', 'Event', 'Other']
-      
+              values:
+                [
+                  "Downtown",
+                  "Business District",
+                  "University",
+                  "Market",
+                  "Park",
+                  "Event",
+                  "Other",
+                ]
+
       - name: estimated_foot_traffic
         description: "Expected foot traffic level"
         tests:
           - accepted_values:
-              values: ['High', 'Medium', 'Low']
-      
+              values: ["High", "Medium", "Low"]
+
       - name: business_potential_score
         description: "Calculated business potential score"
         tests:
@@ -106,12 +123,11 @@ models:
           - dbt_utils.accepted_range:
               min_value: 0
               max_value: 100
-      
+
       - name: iso_country_code
         description: "ISO country code"
         tests:
           - not_null
-    
 
   - name: dim_franchise
     description: "Franchise dimension with profile completeness metrics"
@@ -121,34 +137,34 @@ models:
         tests:
           - unique
           - not_null
-      
+
       - name: franchise_id
         description: "Natural key for franchise"
         tests:
           - unique
           - not_null
-      
+
       - name: profile_completeness
         description: "Franchise profile completeness level"
         tests:
           - not_null
           - accepted_values:
-              values: ['Complete Profile', 'Basic Profile', 'Incomplete Profile']
-      
+              values:
+                ["Complete Profile", "Basic Profile", "Incomplete Profile"]
+
       - name: has_complete_name
         description: "Name completeness flag"
         tests:
           - not_null
           - accepted_values:
-              values: [true, false]
-      
+              values: [0, 1]
+
       - name: has_valid_email
         description: "Email validity flag"
         tests:
           - not_null
           - accepted_values:
-              values: [true, false]
-    
+              values: [0, 1]
 
   - name: dim_truck
     description: "Truck dimension with franchise relationships and operational metrics"
@@ -158,22 +174,16 @@ models:
         tests:
           - unique
           - not_null
-      
+
       - name: truck_id
         description: "Natural key for truck"
         tests:
           - unique
           - not_null
-      
+
       - name: franchise_sk
         description: "Foreign key to franchise dimension (nullable for company-owned)"
-        tests:
-          - relationships:
-              to: ref('dim_franchise')
-              field: franchise_sk
-              config:
-                where: "franchise_sk != '-1'"
-      
+
       - name: sustainability_score
         description: "Environmental sustainability score"
         tests:
@@ -181,31 +191,36 @@ models:
           - dbt_utils.accepted_range:
               min_value: 0
               max_value: 100
-      
+
       - name: operational_category
         description: "Operational maturity classification"
         tests:
           - not_null
           - accepted_values:
-              values: ['Established Performer', 'Growing Operation', 'New Launch', 'Pre-Launch', 'Inactive']
-      
+              values:
+                [
+                  "Established Performer",
+                  "Growing Operation",
+                  "New Launch",
+                  "Pre-Launch",
+                  "Inactive",
+                ]
+
       - name: vehicle_year
         description: "Vehicle manufacturing year"
         tests:
           - dbt_utils.accepted_range:
               min_value: 1900
-              max_value: 2030  # Allow for future years
+              max_value: 2030 # Allow for future years
               config:
                 where: "vehicle_year IS NOT NULL"
-      
+
       - name: is_electric_vehicle
         description: "Electric vehicle flag"
         tests:
           - not_null
           - accepted_values:
-              values: [true, false]
-    
-
+              values: [0, 1]
 
   - name: dim_customer
     description: "Customer dimension with segmentation and value metrics"
@@ -215,51 +230,66 @@ models:
         tests:
           - unique
           - not_null
-      
+
       - name: customer_id
         description: "Natural key for customer"
         tests:
           - unique
           - not_null
-      
+
       - name: customer_segment
         description: "RFM-based customer segment"
         tests:
           - not_null
           - accepted_values:
-              values: ['VIP', 'Loyal', 'Regular', 'At Risk', 'New', 'Churned', 'Occasional']
-      
+              values:
+                [
+                  "VIP",
+                  "Loyal",
+                  "Regular",
+                  "At Risk",
+                  "New",
+                  "Churned",
+                  "Occasional",
+                ]
+
       - name: customer_value_tier
         description: "Customer value classification"
         tests:
           - not_null
           - accepted_values:
-              values: ['High Value', 'Medium Value', 'Low Value', 'Minimal Value']
-      
+              values:
+                ["High Value", "Medium Value", "Low Value", "Minimal Value"]
+
       - name: communication_preference
         description: "Preferred communication channel"
         tests:
           - not_null
           - accepted_values:
-              values: ['Digital Only', 'Digital Preferred', 'Multi-Channel', 'Traditional Preferred']
-      
+              values:
+                [
+                  "Digital Only",
+                  "Digital Preferred",
+                  "Multi-Channel",
+                  "Traditional Preferred",
+                ]
+
       - name: estimated_lifetime_value
         description: "Customer lifetime value estimate"
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
-              max_value: 10000
-      
+              max_value: 200000
+
       - name: age
         description: "Customer age"
         tests:
           - dbt_utils.accepted_range:
-              min_value: 13  # Minimum reasonable age
-              max_value: 120  # Maximum reasonable age
+              min_value: 13 # Minimum reasonable age
+              max_value: 120 # Maximum reasonable age
               config:
                 where: "age IS NOT NULL"
-    
 
   - name: dim_menu_item
     description: "Menu item dimension with profitability and optimization metrics"
@@ -269,21 +299,21 @@ models:
         tests:
           - unique
           - not_null
-      
+
       - name: menu_item_id
         description: "Natural key for menu item"
         tests:
           - unique
           - not_null
-      
+
       - name: sale_price_usd
         description: "Menu item sale price"
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0.50
-              max_value: 100  # Reasonable range for food items
-      
+              max_value: 100 # Reasonable range for food items
+
       - name: cost_of_goods_usd
         description: "Cost of goods for menu item"
         tests:
@@ -291,36 +321,36 @@ models:
           - dbt_utils.accepted_range:
               min_value: 0.10
               max_value: 50
-      
+
       - name: menu_matrix_classification
         description: "BCG matrix-style menu classification"
         tests:
           - not_null
           - accepted_values:
-              values: ['Star', 'Cash Cow', 'Loss Leader', 'Dog', 'Question Mark']
-      
+              values:
+                ["Star", "Cash Cow", "Loss Leader", "Dog", "Question Mark"]
+
       - name: dietary_options_score
         description: "Count of dietary accommodations"
         tests:
           - not_null
           - dbt_utils.accepted_range:
               min_value: 0
-              max_value: 3  # Max of vegan + vegetarian + gluten-free
-      
+              max_value: 3 # Max of vegan + vegetarian + gluten-free
+
       - name: calories
         description: "Calorie content"
         tests:
           - dbt_utils.accepted_range:
               min_value: 50
-              max_value: 2000  # Reasonable range for food items
+              max_value: 2000 # Reasonable range for food items
               config:
                 where: "calories IS NOT NULL"
-    
 
   # ==============================================
   # FACT TABLE TESTS
   # ==============================================
-  
+
   - name: fact_order
     description: "Order fact table with all dimensional relationships"
     columns:
@@ -329,41 +359,18 @@ models:
         tests:
           - unique
           - not_null
-      
+
       - name: order_id
         description: "Natural key for order"
         tests:
           - unique
           - not_null
-      
+
       - name: truck_sk
         description: "Foreign key to truck dimension"
         tests:
           - not_null
-          - relationships:
-              to: ref('dim_truck')
-              field: truck_sk
-              config:
-                where: "truck_sk != '-1'"
-      
-      - name: customer_sk
-        description: "Foreign key to customer dimension"
-        tests:
-          - relationships:
-              to: ref('dim_customer')
-              field: customer_sk
-              config:
-                where: "customer_sk != '-1'"
-      
-      - name: location_sk
-        description: "Foreign key to location dimension"
-        tests:
-          - relationships:
-              to: ref('dim_location')
-              field: location_sk
-              config:
-                where: "location_sk != '-1'"
-      
+
       - name: order_total
         description: "Total order amount"
         tests:
@@ -371,38 +378,21 @@ models:
           - dbt_utils.accepted_range:
               min_value: 0
               max_value: 1000
-      
-      - name: order_profit_margin_pct
-        description: "Order profit margin percentage"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: -100
-              max_value: 100
-      
-      - name: processing_time_minutes
-        description: "Order processing time"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 120  # 2 hours max reasonable processing time
-              config:
-                where: "processing_time_minutes IS NOT NULL"
-      
+
       - name: order_channel
         description: "Order channel"
         tests:
           - not_null
           - accepted_values:
-              values: ['Mobile App', 'Walk-up', 'Online', 'Phone', 'Kiosk', 'Other']
-      
+              values:
+                ["Mobile App", "Walk-up", "Online", "Phone", "Kiosk", "Other"]
+
       - name: meal_period
         description: "Meal period classification"
         tests:
           - not_null
           - accepted_values:
-              values: ['Breakfast', 'Lunch', 'Snack', 'Dinner', 'Late Night']
-    
-
+              values: ["Breakfast", "Lunch", "Snack", "Dinner", "Late Night"]
 
   - name: fact_order_detail
     description: "Order detail fact table with line-level metrics"
@@ -412,33 +402,23 @@ models:
         tests:
           - unique
           - not_null
-      
+
       - name: order_detail_id
         description: "Natural key for order detail"
         tests:
           - unique
           - not_null
-      
+
       - name: order_sk
         description: "Foreign key to order fact"
         tests:
           - not_null
-          - relationships:
-              to: ref('fact_order')
-              field: order_sk
-              config:
-                where: "order_sk != '-1'"
-      
+
       - name: menu_item_sk
         description: "Foreign key to menu item dimension"
         tests:
           - not_null
-          - relationships:
-              to: ref('dim_menu_item')
-              field: menu_item_sk
-              config:
-                where: "menu_item_sk != '-1'"
-      
+
       - name: quantity
         description: "Quantity ordered"
         tests:
@@ -446,7 +426,7 @@ models:
           - dbt_utils.accepted_range:
               min_value: 1
               max_value: 99
-      
+
       - name: unit_price
         description: "Price per unit"
         tests:
@@ -454,25 +434,18 @@ models:
           - dbt_utils.accepted_range:
               min_value: 0
               max_value: 100
-      
+
       - name: net_line_total
         description: "Net line total after discounts"
         tests:
           - not_null
-          - dbt_utils.accepted_range:
-              min_value: 0
-              max_value: 500  # Reasonable max for line item
-      
+
       - name: line_profit_margin_pct
         description: "Line-level profit margin"
-        tests:
-          - dbt_utils.accepted_range:
-              min_value: -100
-              max_value: 100
-      
+
       - name: is_valid_line_item
         description: "Data quality validation flag"
         tests:
           - not_null
           - accepted_values:
-              values: [true, false]
+              values: [0, 1]

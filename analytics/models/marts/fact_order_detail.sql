@@ -43,7 +43,6 @@ fact_order_details AS (
         
         -- Menu item context
         dm.item_category,
-        dm.item_subcategory,
         dm.truck_brand_name,
         dm.is_vegetarian,
         dm.is_vegan,
