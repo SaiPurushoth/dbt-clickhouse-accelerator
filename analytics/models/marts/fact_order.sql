@@ -22,8 +22,7 @@ fact_orders AS (
         COALESCE(dt.truck_sk, '-1') AS truck_sk,
         COALESCE(dl.location_sk, '-1') AS location_sk,
         COALESCE(dc.customer_sk, '-1') AS customer_sk,
-        COALESCE(dd.date_sk, '-1') AS order_date_sk,
-        COALESCE(dtime.time_sk, '-1') AS order_time_sk, 
+        toDate(o.order_timestamp) as order_date,
         
         -- Order attributes
         o.shift_id,
@@ -77,11 +76,6 @@ fact_orders AS (
     LEFT JOIN {{ ref('dim_customer') }} dc
         ON o.customer_id = dc.customer_id
         
-    LEFT JOIN {{ ref('dim_date') }} dd
-        ON toDate(o.order_timestamp) = dd.date_actual 
-        
-    LEFT JOIN {{ ref('dim_time') }} dtime
-        ON toDateTime(o.order_timestamp) = dtime.time_actual 
 )
 
 SELECT * FROM fact_orders

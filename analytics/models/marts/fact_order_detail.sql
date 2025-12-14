@@ -6,7 +6,7 @@
 ) }}
 
 WITH order_details_base AS (
-    SELECT * FROM {{ ref('stg_pos_order_details') }}
+    SELECT * FROM {{ ref('stg_order_details') }}
     {% if is_incremental() %}
         -- Standard dbt incremental logic (ClickHouse compatible)
         WHERE updated_ts > (SELECT MAX(updated_ts) FROM {{ this }})

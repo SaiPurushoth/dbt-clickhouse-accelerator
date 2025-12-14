@@ -28,7 +28,7 @@ WITH cities_with_countries AS (
         c.created_ts,
         now() AS updated_ts
         
-    FROM {{ ref('stg_cities') }} c
+    FROM {{ ref('stg_countries') }} c
     LEFT JOIN {{ ref('stg_countries') }} co ON c.country_id = co.country_id
     
     -- Filter out records without a city ID

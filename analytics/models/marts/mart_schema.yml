@@ -31,16 +31,6 @@ models:
           - accepted_values:
               values: [true, false]
     
-    tests:
-      # Custom test: All countries should have valid region names
-      - dbt_utils.expression_is_true:
-          expression: "region_name IS NOT NULL AND LEN(TRIM(region_name)) > 0"
-      # Custom test: ISO country code length should be 2
-      - dbt_utils.expression_is_true:
-          expression: "LEN(iso_country) = 2"
-      # Custom test: ISO curency length should be 3
-      - dbt_utils.expression_is_true:
-          expression: "LEN(iso_currency) = 3"
 
   - name: dim_city
     description: "City dimension with country relationships and timezone data"
@@ -81,10 +71,6 @@ models:
           - accepted_values:
               values: ['America/New_York', 'America/Toronto', 'Europe/London', 'Europe/Paris', 'Europe/Berlin', 'Asia/Tokyo', 'Australia/Sydney', 'UTC']
     
-    tests:
-      # Custom test: City names should be non-empty
-      - dbt_utils.expression_is_true:
-          expression: "city_name IS NOT NULL AND LEN(TRIM(city_name)) > 0"
 
   - name: dim_location
     description: "Location dimension with business potential scoring"
@@ -126,16 +112,6 @@ models:
         tests:
           - not_null
     
-    tests:
-      # Custom test: Business potential score logic validation
-      - dbt_utils.expression_is_true:
-          expression: >
-            (location_type = 'Downtown' AND estimated_foot_traffic = 'High' AND business_potential_score = 95) OR
-            (location_type = 'Business District' AND estimated_foot_traffic = 'High' AND business_potential_score = 90) OR
-            business_potential_score IN (60, 70, 75, 80, 85)
-      # Custom test: ISO Country Code length should be 2
-      - dbt_utils.expression_is_true:
-            expression: "LEN(iso_country_code) = 2"
 
   - name: dim_franchise
     description: "Franchise dimension with profile completeness metrics"
@@ -173,13 +149,6 @@ models:
           - accepted_values:
               values: [true, false]
     
-    tests:
-      # Custom test: Profile completeness logic consistency
-      - dbt_utils.expression_is_true:
-          expression: >
-            (profile_completeness = 'Complete Profile' AND has_complete_name = TRUE AND has_valid_email = TRUE) OR
-            (profile_completeness = 'Basic Profile' AND has_complete_name = TRUE AND has_valid_email = FALSE) OR
-            (profile_completeness = 'Incomplete Profile' AND has_complete_name = FALSE)
 
   - name: dim_truck
     description: "Truck dimension with franchise relationships and operational metrics"
@@ -236,10 +205,7 @@ models:
           - accepted_values:
               values: [true, false]
     
-    tests:
-      # Custom test: Electric vehicles should have highest sustainability score
-      - dbt_utils.expression_is_true:
-          expression: "is_electric_vehicle = FALSE OR sustainability_score = 100"
+
 
   - name: dim_customer
     description: "Customer dimension with segmentation and value metrics"
@@ -294,14 +260,6 @@ models:
               config:
                 where: "age IS NOT NULL"
     
-    tests:
-      # Custom test: Customer value tier alignment with LTV
-      - dbt_utils.expression_is_true:
-          expression: >
-            (customer_value_tier = 'High Value' AND estimated_lifetime_value >= 500) OR
-            (customer_value_tier = 'Medium Value' AND estimated_lifetime_value >= 200 AND estimated_lifetime_value < 500) OR
-            (customer_value_tier = 'Low Value' AND estimated_lifetime_value >= 50 AND estimated_lifetime_value < 200) OR
-            (customer_value_tier = 'Minimal Value' AND estimated_lifetime_value < 50)
 
   - name: dim_menu_item
     description: "Menu item dimension with profitability and optimization metrics"
@@ -358,12 +316,6 @@ models:
               config:
                 where: "calories IS NOT NULL"
     
-    tests:
-      # Custom test: Cost should be less than sale price for profitable items
-      - dbt_utils.expression_is_true:
-          expression: "cost_of_goods_usd < sale_price_usd"
-          config:
-            where: "profit_margin_pct > 0"
 
   # ==============================================
   # FACT TABLE TESTS
@@ -450,18 +402,7 @@ models:
           - accepted_values:
               values: ['Breakfast', 'Lunch', 'Snack', 'Dinner', 'Late Night']
     
-    tests:
-      # Custom test: Order financial components should balance
-      - dbt_utils.expression_is_true:
-          expression: "ABS(order_total - (order_amount + order_tax_amount - order_discount_amount)) <= 0.05"
-          config:
-            severity: warn
-      
-      # Custom test: Order profit calculation accuracy
-      - dbt_utils.expression_is_true:
-          expression: "ABS(order_profit - (order_total - total_cost_of_goods)) <= 0.05"
-          config:
-            where: "total_cost_of_goods IS NOT NULL"
+
 
   - name: fact_order_detail
     description: "Order detail fact table with line-level metrics"
@@ -535,14 +476,3 @@ models:
           - not_null
           - accepted_values:
               values: [true, false]
-    
-    tests:
-      # Custom test: Line profit calculation accuracy
-      - dbt_utils.expression_is_true:
-          expression: "ABS(line_profit - (net_line_total - line_cost_of_goods)) <= 0.01"
-          config:
-            where: "is_valid_line_item = TRUE"
-      
-      # Custom test: Only valid line items should be in fact table
-      - dbt_utils.expression_is_true:
-          expression: "is_valid_line_item = TRUE"

@@ -7,7 +7,7 @@ WITH truck_with_franchise AS (
     SELECT
         t.*,
         f.franchise_sk
-    FROM {{ ref('stg_trucks') }} t
+    FROM {{ ref('stg_truck') }} t
     LEFT JOIN {{ ref('dim_franchise') }} f 
         ON t.franchise_id = f.franchise_id
         AND t.is_franchise = TRUE
